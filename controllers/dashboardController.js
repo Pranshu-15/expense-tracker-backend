@@ -136,6 +136,6 @@ exports.getSpendingInsights = async (req, res) => {
     res.json({ insight: response.text });
   } catch (error) {
     console.error("AI Insight error:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.json({ insight: "AI insights temporarily unavailable. Please check API key." });
   }
 };

@@ -17,6 +17,10 @@
 🗄️ **Database Integration**: MongoDB/MySQL support with Mongoose/Sequelize ORM  
 🔒 **Security**: CORS, rate limiting, and data encryption  
 📚 **API Documentation**: Swagger/OpenAPI documentation  
+🤖 **AI Spending Insights**: Integration with Google Gemini for smart financial summaries
+🖼️ **Cloud-Ready Uploads**: Base64 memory storage for images ensuring persistence on ephemeral hosts
+🔑 **Advanced Password Recovery**: Bcrypt-hashed security questions for password resets
+🛡️ **Production Security**: Helmet headers, express-rate-limit, and strict CORS policies
 
 ---
 
@@ -32,6 +36,8 @@
 | ✨ **Joi** / 🔍 **Express-validator** | Validation | Latest | ✅ Reliable |
 | 🛡️ **Helmet** / 🌐 **CORS** / 🔐 **bcryptjs** | Security | Latest | ✅ Fort Knox |
 | 🌍 **dotenv** | Environment | Latest | ✅ Flexible |
+| 🚦 **express-rate-limit** | Brute-force Protection | Latest | ✅ Safe |
+| 🧠 **@google/genai** | AI Integration | Latest | ✅ Smart |
 | 📝 **Winston** / 📊 **Morgan** | Logging | Latest | ✅ Observable |
 | 🧪 **Jest** / ☕ **Mocha** | Testing | Latest | ✅ Bulletproof |
 | 📖 **Swagger UI** | Documentation | Latest | ✅ Interactive |

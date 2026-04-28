@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Expense = require("../models/Expense");
 const xlsx = require("xlsx");
+const { GoogleGenAI } = require("@google/genai");
 //Add Expense Source
 exports.addExpense = async (req, res) => {
   const userId = req.user.id;
@@ -47,6 +48,73 @@ exports.deleteExpense = async (req, res) => {
     res.json({ message: "Expense deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
+  }
+};
+
+exports.parseTransaction = async (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ message: "text is required" });
+
+  try {
+    const ai    = new GoogleGenAI({});
+    const today = new Date().toISOString().split("T")[0];
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Today's date is ${today}.
+
+Parse this expense transaction description into structured JSON:
+"${text}"
+
+Return ONLY a valid JSON object with exactly these fields:
+{
+  "icon": "<a single emoji that best represents the expense category>",
+  "category": "<title-case name, e.g. Food, Groceries, Travel, Rent, Entertainment, Healthcare, Shopping, Utilities, Transport>",
+  "amount": <number, no currency symbol>,
+  "paidVia": "<exactly one of: Cash | UPI | Credit Card | Debit Card>",
+  "date": "<YYYY-MM-DD, resolve relative dates like yesterday/today/last Monday using today=${today}>"
+}
+
+Rules:
+- icon must be a single emoji character relevant to the category (e.g. 🍕 for Food, 🚗 for Transport, 🏠 for Rent).
+- If payment method is not mentioned, default to "UPI".
+- If date is not mentioned, use today (${today}).
+- amount must be a number, not a string.
+- Return ONLY the JSON. No markdown, no explanation.`,
+    });
+
+    const raw     = response.text.trim();
+    const cleaned = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/, "").trim();
+    const parsed  = JSON.parse(cleaned);
+
+    if (!parsed.category || !parsed.amount || !parsed.paidVia || !parsed.date) {
+      return res.status(422).json({ message: "Could not extract all required fields from that text." });
+    }
+
+    res.json(parsed);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to parse transaction", error: error.message });
+  }
+};
+
+exports.suggestCategory = async (req, res) => {
+  const { icon } = req.body;
+  if (!icon) {
+    return res.status(400).json({ message: "icon is required" });
+  }
+
+  try {
+    const ai = new GoogleGenAI({});
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Given the emoji "${icon}", reply with a single expense category name (2-3 words max, title case). Examples: Food, Rent, Travel, Groceries, Entertainment, Healthcare, Shopping, Utilities. Reply with only the category name, nothing else.`,
+    });
+
+    const category = response.text.trim();
+    res.json({ category });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to suggest category", error: error.message });
   }
 };
 
